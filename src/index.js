@@ -1,5 +1,6 @@
 const express=require('express')
 const app=express()
+const cors=require('cors')
 const cookieParser = require("cookie-parser");
 const router=require('../route/user')
 app.use(express.json())
@@ -11,3 +12,6 @@ app.listen(3000,(error,info)=>{
     })
 })
 app.use(router)
+app.use(cors({
+    origin: 'http://localhost:5173/',
+  }));

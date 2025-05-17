@@ -152,9 +152,10 @@ async  function reviewconnectionRequest(req,res){
         message:"Connection Request not present"
       })
     }
-    const data=await ConnectionRequestModal.insertOne({fromUserId,requestId,status})
+    console.log('conection',isconnnectionRequestPresent)
+    const data=await ConnectionRequestModal.findByIdAndUpdate(requestId,{status:status})
     return  res.send({
-      message:`Connection Request + ${status}}`,
+      message:`Connection Request  ${status}`,
     })
   }
   catch(error){
@@ -163,5 +164,71 @@ async  function reviewconnectionRequest(req,res){
   })
   }
 }
-module.exports={signup,login,userview,connectionRequest,reviewconnectionRequest}
+
+
+
+async function getconnectionrequestofuser(req,res){
+   try{
+   let user=req.user
+   let id=user._id
+   let allconnectionRequest=await ConnectionRequestModal.find({toUserId:id,status:"interested"})
+   if(allconnectionRequest.length==0){
+        return res.send({
+          message:"No request"
+        })
+   }
+   console.log(allconnectionRequest)
+   res.send({
+    data:allconnectionRequest
+   })
+   }
+   catch(errro){
+    res.send({
+      message:error.message
+    })
+   }
+}
+
+async function getallconnectionofuser(req,res){
+   try{
+   let user=req.user
+   let id=user._id
+   let allconnection=await ConnectionRequestModal.find({toUserId:id,status:"accepted"})
+   if(allconnection.length==0){
+        return res.send({
+          message:"No Connection Found"
+        })
+   }
+   console.log(allconnection)
+   res.send({
+    data:allconnection
+   })
+   }
+   catch(errro){
+    res.send({
+      message:error.message
+    })
+   }
+}
+
+async function getuser(req,res){
+   try{
+  
+   let alluser=await UserModal.find({})
+   if(alluser.length==0){
+        return res.send({
+          message:"No user Found"
+        })
+   }
+   res.send({
+    data:alluser
+   })
+   }
+   catch(errro){
+    res.send({
+      message:error.message
+    })
+   }
+}
+module.exports={signup,login,userview,connectionRequest,reviewconnectionRequest,getconnectionrequestofuser,getallconnectionofuser,getuser}
   
