@@ -26,14 +26,17 @@ const userSchema=mongoose.Schema({
     }
 
 })
+const UserModal=mongoose.model('User',userSchema)
 const ConnectionRequestSchema=mongoose.Schema({
     fromUserId:{
     type: mongoose.Schema.Types.ObjectId,
+    ref:UserModal,
     required:true
     },
     toUserId:{
       type:mongoose.Schema.Types.ObjectId,
-      required:true  
+      required:true,
+      ref:UserModal
     },
     status:{
         type:String,
@@ -44,7 +47,7 @@ const ConnectionRequestSchema=mongoose.Schema({
         }
     }
 },{timestamps:true})
-const UserModal=mongoose.model('User',userSchema)
+
 
 const ConnectionRequestModal=mongoose.model('ConnectionRequest',ConnectionRequestSchema)
 

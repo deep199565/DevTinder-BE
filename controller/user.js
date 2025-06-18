@@ -2,6 +2,7 @@ const {UserModal,ConnectionRequestModal}=require('../models/Users')
 const {validationResult}=require('express-validator')
 const bcrypt=require("bcrypt")
 const jwt=require('jsonwebtoken')
+const USER_SAFE_DATA = "firstName lastName";
 
 async function signup(req,res){
     try{
@@ -171,7 +172,7 @@ async function getconnectionrequestofuser(req,res){
    try{
    let user=req.user
    let id=user._id
-   let allconnectionRequest=await ConnectionRequestModal.find({toUserId:id,status:"interested"})
+   let allconnectionRequest=await ConnectionRequestModal.find({toUserId:id,status:"interested"}).populate("fromUserId",["firstName","lastName"])
    if(allconnectionRequest.length==0){
         return res.send({
           message:"No request"
@@ -193,7 +194,11 @@ async function getallconnectionofuser(req,res){
    try{
    let user=req.user
    let id=user._id
-   let allconnection=await ConnectionRequestModal.find({toUserId:id,status:"accepted"})
+   let allconnection=await ConnectionRequestModal.find({$or: [
+        { toUserId: user._id, status: "accepted" },
+        { fromUserId: user._id, status: "accepted" },
+      ],}).populate("fromUserId",["firstName","lastName"])
+      .populate("toUserId",["firstName","lastName"])
    if(allconnection.length==0){
         return res.send({
           message:"No Connection Found"
@@ -204,7 +209,7 @@ async function getallconnectionofuser(req,res){
     data:allconnection
    })
    }
-   catch(errro){
+   catch(error){
     res.send({
       message:error.message
     })
@@ -213,15 +218,34 @@ async function getallconnectionofuser(req,res){
 
 async function getuser(req,res){
    try{
-  
-   let alluser=await UserModal.find({})
-   if(alluser.length==0){
+  let user= req.user
+    const page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 10;
+    limit = limit > 50 ? 50 : limit;
+    const skip = (page - 1) * limit;
+   let connectionrequest=await ConnectionRequestModal.find({$or:[{toUserId:user._id},{fromUserId:user.id}]})
+
+   let hideuser=new Set();
+    connectionrequest.forEach((res)=>{
+      hideuser.add(res.fromUserId.toString())
+      hideuser.add(res.toUserId.toString())
+    })
+    
+    const users = await UserModal.find({
+      $and: [
+        { _id: { $nin: Array.from(hideUsersFromFeed) } },
+        { _id: { $ne: loggedInUser._id } },
+      ],
+    }) .select(USER_SAFE_DATA)
+      .skip(skip)
+      .limit(limit);
+   if(users.length==0){
         return res.send({
           message:"No user Found"
         })
    }
    res.send({
-    data:alluser
+    data:users
    })
    }
    catch(errro){
