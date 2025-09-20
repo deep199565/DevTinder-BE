@@ -6,14 +6,16 @@ async function authcheck(req,res,next){
   const {token}=req.cookies
   if(!token){
     return res.send({
-        message:"Unathorized"
+        message:"Unathorized",
+        ResponseCode:401
     })
   }
 
   const isVerify=await jwt.verify(token,'Dm@503503')
   if(!isVerify){
     return res.send({
-        message:"Unauthorized"
+        message:"Unauthorized",
+        ResponseCode:401
     })
   }
   const {_id}=isVerify

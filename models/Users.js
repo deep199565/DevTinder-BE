@@ -23,8 +23,27 @@ const userSchema=mongoose.Schema({
     },
     gender:{
         type:String,
-    }
-
+    },
+    aboutMe:{
+        type:String,
+        required:true
+    },
+    imgUrl:{
+        type:String,
+        required:true
+    },
+    age:{
+        type:Number,
+        required:true
+    },
+    city:{
+        type:String,
+        required:true
+    },
+    country:{
+        type:String,
+        required:true
+    },
 })
 const UserModal=mongoose.model('User',userSchema)
 const ConnectionRequestSchema=mongoose.Schema({
