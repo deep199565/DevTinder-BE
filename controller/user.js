@@ -68,8 +68,11 @@ return res.send({
     expiresIn: "7d",
   });
   res.cookie("token", token, {
-    expires: new Date(Date.now() + 8 * 3600000),
-  });
+  httpOnly: true,
+  secure: true, // must be HTTPS in production
+  sameSite: "None", // allows cross-site cookie
+  maxAge: 24*60*60*1000
+});
   res.send({
     ResponseCode:200,
     message:"Login successfully",
