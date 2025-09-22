@@ -1,18 +1,13 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect("mongodb://127.0.0.1:27017/devtinder", {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-
-    console.log("✅ MongoDB connected");
-    console.log("   Host:", conn.connection.host);
-    console.log("   Port:", conn.connection.port);
-    console.log("   DB Name:", conn.connection.name);
-  } catch (err) {
-    console.error("❌ MongoDB connection error:", err.message);
+    await mongoose.connect(
+     "mongodb+srv://deeppatel199565_db_user:MfTISHnuRBHSKgaH@cluster0.cvy3xvg.mongodb.net/"
+    );
+    console.log("✅ MongoDB connected to Atlas");
+  } catch (error) {
+    console.error("MongoDB connection error:", error);
     process.exit(1);
   }
 };
