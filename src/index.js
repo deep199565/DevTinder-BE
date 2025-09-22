@@ -15,7 +15,7 @@ function hashkey(userId,targetUserId){
 }
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:4200',
+  origin: 'http://3.142.184.180',
   credentials: true // use this if you're working with cookies or sessions
 }));
 app.use(express.json());
