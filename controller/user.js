@@ -20,22 +20,27 @@ async function signup(req, res) {
 
     const hashpassword = await bcrypt.hash(req.body.password, 10);
 
+    // Create new user and save
     const user = new UserModal({ ...req.body, password: hashpassword });
-    await user.save();  // ✅ actually inserts into MongoDB
+    const savedUser = await user.save();
+    console.log("Saved user:", savedUser);
 
     sendmail(req.body.email, 'Welcome', 'Welcome to DevTinder! Now you can make connections.');
 
     res.send({
       ResponseCode: 200,
       Message: "User added successfully",
-      user: user  // optional: returns created user
+      user: savedUser
     });
   } catch (error) {
+    console.error("Signup error:", error);
     res.status(500).send({
-      message: error.message
+      message: error.message,
+      error
     });
   }
 }
+
 
 async function login(req,res){
 try{
@@ -100,42 +105,44 @@ async function userview(req,res){
 }
  
 
-async function connectionRequest(req,res){
-try{
-  const user=req.user
-  const toUserId=req.params.requestId
-  const fromUserId= user._id.toString()
-  const status=req.params.status
-  const allowedStatus=['interested','ignored']
-  const isAllowed=allowedStatus.includes(status)
-  if(!isAllowed){
-    return res.send({
-      message:"Invalid Status"
-    })
-  }
+async function connectionRequest(req, res) {
+  try {
+    const user = req.user;
+    const toUserId = req.params.requestId;
+    const fromUserId = user._id.toString();
+    const status = req.params.status;
 
-  const isuserAlready=await ConnectionRequestModal.findOne({$or:[{fromUserId,toUserId},{fromUserId:toUserId,toUserId:fromUserId}]})
+    const allowedStatus = ['interested', 'ignored'];
+    if (!allowedStatus.includes(status)) {
+      return res.send({ message: "Invalid Status" });
+    }
 
-  if(isuserAlready){
-  return res.send({
-    message:"Connection request already send"
-  })
+    if (fromUserId === toUserId) {
+      return res.send({ message: "Bad request" });
+    }
+
+    // Check if request already exists
+    const isAlready = await ConnectionRequestModal.findOne({
+      $or: [
+        { fromUserId, toUserId },
+        { fromUserId: toUserId, toUserId: fromUserId }
+      ]
+    });
+
+    if (isAlready) {
+      return res.send({ message: "Connection request already sent" });
+    }
+
+    // Create new connection request
+    const newRequest = new ConnectionRequestModal({ fromUserId, toUserId, status });
+    const savedRequest = await newRequest.save();
+    console.log("Saved connection request:", savedRequest);
+
+    return res.send({ message: "Connection Request Sent", data: savedRequest });
+  } catch (error) {
+    console.error("Connection request error:", error);
+    return res.send({ message: error.message });
   }
-  if(fromUserId==toUserId){
-    return res.send({
-      messsage:"Bad request"
-    })
-  }
-  const data=await ConnectionRequestModal.insertOne({fromUserId,toUserId,status})
-  return  res.send({
-    message:"Connection Request Sent",
-  })
-}
-catch(error){
-return res.send({
-  message:error.message
-})
-}
 }
 async  function reviewconnectionRequest(req,res){
   try{
