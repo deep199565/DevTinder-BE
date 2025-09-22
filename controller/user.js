@@ -7,40 +7,36 @@ const jwt=require('jsonwebtoken')
 const {sendmail}=require('../middleware/mailer')
 const USER_SAFE_DATA = "firstName lastName aboutMe imgUrl age city country";
 
-async function signup(req,res){
-    try{
-        const errors=validationResult(req)
-    
-      if (!errors.isEmpty()) {
-        return res.status(400).json({
-            message: 'All fields are required',
-            error: errors.array(),
-            ResponseCode: 400
-        })
-    }  
-    const hashpassword=await bcrypt.hash(req.body.password,10)
-    const user=  await UserModal.insertOne({...req.body,password:hashpassword})
-      if(user){
-          
-        sendmail(req.body.email,'Welcome','Welcome to the DevTider Now you can make connection for your better future')
-        res.send({
-          ResponseCode:200,
-          Message:"User added successfully"
-        })
-      }
-      else{
-        res.status(400).send({
-            "Error":error.array()
-        })
-      }
-        }
-        catch(error){
-        res.status(500).send({
-          message:error
-        })
-        }
-    
+async function signup(req, res) {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        message: 'All fields are required',
+        error: errors.array(),
+        ResponseCode: 400
+      });
+    }
+
+    const hashpassword = await bcrypt.hash(req.body.password, 10);
+
+    const user = new UserModal({ ...req.body, password: hashpassword });
+    await user.save();  // ✅ actually inserts into MongoDB
+
+    sendmail(req.body.email, 'Welcome', 'Welcome to DevTinder! Now you can make connections.');
+
+    res.send({
+      ResponseCode: 200,
+      Message: "User added successfully",
+      user: user  // optional: returns created user
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: error.message
+    });
+  }
 }
+
 async function login(req,res){
 try{
 
